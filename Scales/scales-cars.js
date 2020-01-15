@@ -1,17 +1,46 @@
-let scatterPlot = d3
+let outerWidth = 600
+let outerHeight = 400
+let margins = { top: 30, bottom: 50, left: 50, right: 30 }
+let innerWidth = outerWidth - margins.left - margins.right
+let innerHeight = outerHeight - margins.top - margins.bottom
+
+let scatterOuter = d3
   .select('svg#cars-scatter')
-  .attr('width', 600)
-  .attr('height', 400)
+  .attr('width', outerWidth)
+  .attr('height', outerHeight)
+
+let scatterInner = scatterOuter
+  .append('g')
+  .attr('width', innerWidth)
+  .attr('height', innerHeight)
+  .attr('transform', 'translate(' + margins.left + ',' + margins.right + ')')
+
+scatterOuter
+  .append('rect')
+  .attr('width', outerWidth)
+  .attr('height', outerHeight)
+  .attr('fill', 'transparent')
+  .attr('stroke', 'navy')
+  .attr('stroke-width', 2)
+
+scatterInner.style('fill', 'skyblue').style('opacity', 0.8)
+
+scatterInner
+  .append('rect')
+  .attr('width', innerWidth)
+  .attr('height', innerHeight)
+  .attr('fill', 'skyblue')
+  .attr('fill-opacity', 0.2)
 
 let xScale = d3
   .scaleLinear()
   .domain(d3.extent(cars.map(d => d.mpg)))
-  .range([20, 580])
+  .range([20, innerWidth - 20])
 
 let yScale = d3
   .scaleLinear()
   .domain(d3.extent(cars.map(d => d.wt)))
-  .range([20, 380].reverse())
+  .range([20, innerHeight - 20].reverse())
 
 let sizeScale = d3
   .scaleSqrt()
@@ -23,7 +52,7 @@ let colorScale = d3
   .domain([4, 6, 8])
   .range(['red', 'green', 'blue'])
 
-scatterPlot
+scatterInner
   .selectAll('circle')
   .data(cars)
   .enter()

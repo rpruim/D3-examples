@@ -42,7 +42,7 @@ let yScale = d3
   .scaleLinear()
   .domain(d3.extent(cars.map(d => d.wt)))
   .range([20, innerHeight - 20].reverse())
-let yAxis = d3.axisLeft(yScale)
+let yAxis = d3.axisLeft(yScale).tickSize(-innerWidth)
 
 let sizeScale = d3
   .scaleSqrt()
@@ -59,6 +59,13 @@ scatterInner
   .attr('transform', 'translate(' + 0 + ', ' + innerHeight + ')')
   .attr('class', 'x-axis')
   .call(xAxis)
+
+scatterInner
+  .append('rect')
+  .attr('width', innerWidth)
+  .attr('height', innerHeight)
+  .attr('fill', 'transparent')
+  .attr('stroke', 'black')
 
 scatterInner
   .append('g')

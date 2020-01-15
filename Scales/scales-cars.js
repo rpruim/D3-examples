@@ -36,11 +36,13 @@ let xScale = d3
   .scaleLinear()
   .domain(d3.extent(cars.map(d => d.mpg)))
   .range([20, innerWidth - 20])
+let xAxis = d3.axisBottom(xScale)
 
 let yScale = d3
   .scaleLinear()
   .domain(d3.extent(cars.map(d => d.wt)))
   .range([20, innerHeight - 20].reverse())
+let yAxis = d3.axisLeft(yScale)
 
 let sizeScale = d3
   .scaleSqrt()
@@ -51,6 +53,17 @@ let colorScale = d3
   .scaleOrdinal()
   .domain([4, 6, 8])
   .range(['red', 'green', 'blue'])
+
+scatterInner
+  .append('g')
+  .attr('transform', 'translate(' + 0 + ', ' + innerHeight + ')')
+  .attr('class', 'x-axis')
+  .call(xAxis)
+
+scatterInner
+  .append('g')
+  .attr('class', 'y-axis')
+  .call(yAxis)
 
 scatterInner
   .selectAll('circle')

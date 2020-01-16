@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Interactive Heatmap</title>
+  </head>
+  <body>
+    <!-- Load d3.js & plugin-->
+    <script src="https://d3js.org/d3.v5.js"></script>
+
+    <h1>Interaction in D3 - Heatmap Example</h1>
+    <!-- Create a div where the graph will take place -->
+    <div id="div_template"></div>
+    <span id="info"></span>
+
+    <p>
+      This is example is based on
+      <a
+        href="https://www.d3-graph-gallery.com/graph/interactivity_tooltip.html"
+        >an example from d3-graph-gallery.org</a
+      >
+      but has been updated to use D3 version 5
+    </p>
+    <!-- JS to read data and create figure-->
+    <script src="heatmap.js"></script>
+  </body>
+</html>

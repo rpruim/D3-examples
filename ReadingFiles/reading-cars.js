@@ -21,8 +21,20 @@ d3.csv('cars-data.csv').then(data => draw(data))
 let url =
   'https://raw.githubusercontent.com/fivethirtyeight/data/master/us-weather-history/KCLT.csv'
 console.log('Before reading data.')
-d3.csv(url).then(d => console.log(d.slice(0, 3)))
+d3.csv(url, cleanup_data).then(d => console.log(d.slice(0, 3)))
 console.log('After reading data.')
+
+function cleanup_data(d) {
+  // unmentioned variables, like model, remain unchanged
+  d.mpg = +d.mpg
+  d.cyl = +d.cyl
+  d.disp = +d.disp
+  d.hp = +d.hp
+  d.wt = +d.wt
+  d.am = +d.am
+  d.gear = +d.gear
+  return d
+}
 
 function draw(cars) {
   scatterOuter
@@ -96,4 +108,6 @@ function draw(cars) {
     .attr('r', d => sizeScale(d.disp))
     .style('stroke', d => colorScale(d.cyl))
     .style('opacity', 0.6)
+
+  console.log(cars)
 }

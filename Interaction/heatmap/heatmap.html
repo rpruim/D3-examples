@@ -5,23 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>Interactive Heatmap</title>
+    <link rel="stylesheet" href="heatmap.css" />
   </head>
   <body>
-    <!-- Load d3.js & plugin-->
+    <!-- Load d3.js -->
     <script src="https://d3js.org/d3.v5.js"></script>
 
     <h1>Interaction in D3 - Heatmap Example</h1>
-    <!-- Create a div where the graph will take place -->
-    <div id="div_template"></div>
-    <span id="info"></span>
+    <p>Move your mouse and click on squares to see the interactions.</p>
+    <p>
+      Borders on divs are to make the layout clearer. Notice how the tooltip div
+      attempts to stay within its enclosing div, but can't quite do it when the
+      mouse is on a square in the rightmost column.
+    </p>
 
+    <!-- div where the graph will take place -->
+    <div id="graph">
+      <!-- important that div.tooltip nests inside #graph -->
+      <!-- this lets ups position the tooltip based on mouse position -->
+      <div class="tooltip"></div>
+      <svg></svg>
+    </div>
+    <!-- important that this nest inside #graph -->
+    <div class="info"></div>
     <p>
       This is example is based on
       <a
         href="https://www.d3-graph-gallery.com/graph/interactivity_tooltip.html"
         >an example from d3-graph-gallery.org</a
       >
-      but has been updated to use D3 version 5
+      but has been updated to use D3 version 5 and modified in several ways.
     </p>
     <!-- JS to read data and create figure-->
     <script src="heatmap.js"></script>

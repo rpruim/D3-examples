@@ -1,77 +1,69 @@
-// set the dimensions and margins of the graph
-let margin = { top: 20, right: 25, bottom: 30, left: 40 },
-  width = 450 - margin.left - margin.right,
-  height = 450 - margin.top - margin.bottom
+// Margin Convention
+let margins = { top: 20, right: 25, bottom: 30, left: 40 }
+let outerWidth = 450
+let outerHeight = 450
+let innerWidth = 450 - margins.left - margins.right
+let innerHeight = 450 - margins.top - margins.bottom
 
 // append the svg object to the body of the page
 let svg = d3
-  .select('#div_template')
-  .append('svg')
-  .attr('width', width + margin.left + margin.right)
-  .attr('height', height + margin.top + margin.bottom)
+  .select('div#graph svg')
+  .attr('width', outerWidth)
+  .attr('height', outerHeight)
   .append('g')
-  .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
+  .attr('id', 'plot-area')
+  .attr('transform', 'translate(' + margins.left + ',' + margins.top + ')')
 
-//Read the data
+// read the data, then draw the graph
 d3.csv(
   'https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/heatmap_data.csv'
 ).then(draw)
 
 function draw(data) {
-  // Labels of row and columns -> unique identifier of the column called 'group' and 'variable'
-  var myGroups = d3.map(data, d => d.group).keys()
-  var myVars = d3.map(data, d => d.variable).keys()
+  console.log(data)
+  // labels of row and columns -> unique identifier of the column called 'group' and 'variable'
+  var groups = d3.map(data, d => d.group).keys()
+  var vars = d3.map(data, d => d.variable).keys()
 
-  // Build X scales and axis:
+  // build x scale and axis:
   var xScale = d3
     .scaleBand()
-    .range([0, width])
-    .domain(myGroups)
-    .padding(0.05)
+    .domain(groups)
+    .range([0, innerWidth])
+    .padding(0.1)
 
   svg
     .append('g')
     .style('font-size', 15)
-    .attr('transform', 'translate(0,' + height + ')')
+    .attr('transform', 'translate(0,' + innerHeight + ')')
     .call(d3.axisBottom(xScale).tickSize(0))
-    .select('.domain')
+    .select('.domain') // remove horizontal line from axis
     .remove()
 
-  // Build Y scales and axis:
+  // Build y scale and axis:
   var yScale = d3
     .scaleBand()
-    .range([height, 0])
-    .domain(myVars)
+    .domain(vars)
+    .range([innerHeight, 0])
     .padding(0.05)
 
   svg
     .append('g')
     .style('font-size', 15)
     .call(d3.axisLeft(yScale).tickSize(0))
-    .select('.domain')
+    .select('.domain') // remove vertical line from axis
     .remove()
 
-  // Build color scale
-  let myColor = d3
+  // build color scale
+  let colorScale = d3
     .scaleSequential()
     .interpolator(d3.interpolateInferno)
     .domain([1, 100])
 
-  // create a tooltip
-  let Tooltip = d3
-    .select('#info')
-    .style('opacity', 0)
-    .attr('class', 'tooltip')
-    .style('background-color', 'white')
-    .style('border', 'solid')
-    .style('border-width', '2px')
-    .style('border-radius', '5px')
-    .style('padding', '5px')
-
   // add the squares
   svg
     .selectAll()
-    .data(data) // , function(d) {return d.group+':'+d.variable;})
+    .data(data)
     .enter()
     .append('rect')
     .attr('x', d => xScale(d.group))
@@ -80,47 +72,68 @@ function draw(data) {
     .attr('ry', 4)
     .attr('width', xScale.bandwidth())
     .attr('height', yScale.bandwidth())
-    .style('fill', function(d) {
-      return myColor(d.value)
-    })
+    .style('fill', d => colorScale(d.value))
     .style('stroke', 'black')
-    .style('stroke-width', 2)
+    .style('stroke-width', 4)
     .style('stroke-opacity', 0)
     .style('fill-opacity', 0.7)
     .on('mouseover', darken_square)
     .on('mousemove', show_info)
-    .on('mouseleave', lighten_square)
-    .on('click', make_border_red)
+    .on('mouseleave', function(d) {
+      hide_info()
+      lighten_square(d, this) // need to explicitly pass this
+    })
+    .on('click', change_border_color)
 
-  // Three functions that change the tooltip when user hover / move / leave a cell
-  // Because we use the function key word to declare them, we can put them down
+  // three functions that change the tooltip when user hovers / moves in / leaves a cell
+  // because we use the function key word to declare them, we can put them down
   // here and they will be hoisted.
 
   function darken_square(d) {
     d3.select(this)
       .style('fill-opacity', 1)
       .style('stroke-opacity', 1)
+      // shrink a bit to make room for stroke, now visible
+      .attr('x', d => xScale(d.group) + 2)
+      .attr('y', d => yScale(d.variable) + 2)
+      .attr('width', xScale.bandwidth() - 4)
+      .attr('height', yScale.bandwidth() - 4)
   }
 
   function show_info(d) {
-    Tooltip.html('The exact value of this cell is: ' + d.value)
-      .style('opacity', 1)
-      .style('left', d3.mouse(this)[0] + 70 + 'px')
-      .style('top', d3.mouse(this)[1] + 'px')
+    let mouseLoc = d3.mouse(this)
+    let info =
+      'The exact value of this cell is: ' +
+      d.value +
+      '. ' +
+      '<br />Mouse location is: (' +
+      mouseLoc[0] +
+      ', ' +
+      mouseLoc[1] +
+      ').'
+
+    // .html instead of .text() allows us to supply html markup here
+    d3.selectAll('.tooltip, .info')
+      .html(info)
+      .style('visibility', 'visible')
+      // left and top only affect .tooltip b/c position = absolute -- see css
+      .style('left', mouseLoc[0] + margins.left + xScale.bandwidth() + 'px')
+      .style('top', mouseLoc[1] - yScale.bandwidth() + 'px')
   }
 
-  function hide_info(d) {
-    Tooltip.style('opacity', 0)
+  function hide_info() {
+    d3.selectAll('.tooltip, .info').style('visibility', 'hidden')
   }
 
-  function lighten_square(d) {
-    Tooltip.style('opacity', 0)
-    d3.select(this)
+  function lighten_square(d, ref) {
+    d3.select(ref)
       .style('stroke-opacity', 0.5)
       .style('fill-opacity', 0.7)
   }
 
-  function make_border_red(d) {
-    d3.select(this).style('stroke', 'red')
+  function change_border_color(d) {
+    let target = d3.select(this)
+    let color = target.style('stroke') // read the current stroke value
+    target.style('stroke', color == 'red' ? 'blue' : 'red')
   }
 }

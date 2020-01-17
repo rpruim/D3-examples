@@ -1,0 +1,27 @@
+/* position .tooltips relative to #graph */
+
+body {
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+
+div#graph {
+  border: 2px solid navy;
+  border-radius: 8px;
+  position: relative;
+  width: 500px;
+}
+
+.tooltip {
+  position: absolute;
+  border: solid;
+  border-width: 2px;
+  border-radius: 5px;
+  padding: '5px';
+  background-color: white;
+}
+
+.info {
+  position: static;
+  border: 2px solid skyblue;
+  border-radius: 8px;
+}

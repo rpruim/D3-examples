@@ -1,0 +1,15 @@
+body {
+  font-family: 'Indie Flower', cursive;
+}
+
+div.map {
+  border-color: navy;
+  border-radius: 5;
+  border-width: 3;
+  border-style: solid;
+}
+
+svg.map {
+  fill: blanchedalmond;
+  stroke: white;
+}

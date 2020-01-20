@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title></title>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="https://d3js.org/d3-geo-projection.v2.min.js"></script>
+    <link rel="stylesheet" href="map.css" />
+    <link
+      href="https://fonts.googleapis.com/css?family=Indie+Flower&display=swap&subset=latin-ext"
+      rel="stylesheet"
+    />
+  </head>
+
+  <body>
+    <h1>US Demographics</h1>
+
+    <div class="map">
+      Color by:
+      <select class="map"></select>
+    </div>
+
+    <p>How do you like this map?</p>
+
+    <script>
+      let width = 500
+      let height = 375
+      let transitionTime = 3000
+      let myProjection = d3
+        .geoAlbersUsa() // places Alaska and Hawaii closer to continental US
+        .translate([width / 2, height / 2])
+        .scale(650)
+
+      let facts = { population: {}, area: {}, density: {} }
+      let mapData
+      let factsData
+
+      Promise.all([
+        d3.json('states.json'),
+        d3.csv('state-population.csv'),
+      ]).then(function(d) {
+        drawMap(d)
+        updateMap()
+      })
+
+      function drawMap(data) {
+        mapData = data[0]
+        factsData = data[1]
+
+        // we create three objects that serve as "associative arrays" or "hashes"
+        // we will be able to use facts["population"]["Michigan"], for exmample,
+        // to get the population of a state. this is a handy trick for accessing
+        // information based on a key that is bound to svg elements
+
+        for (i in factsData) {
+          facts.population[factsData[i].state] = +factsData[i].population
+          facts.area[factsData[i].state] = +factsData[i].area
+          facts.density[factsData[i].state] = +factsData[i].density
+        }
+
+        let myPath = d3.geoPath().projection(myProjection)
+
+        d3.select('div.map select')
+          .on('input', updateMap)
+          .selectAll('option')
+          .data(Object.keys(facts))
+          .enter()
+          .append('option')
+          .attr('value', d => d)
+          .text(d => d)
+
+        d3.select('div.map')
+          .style('width', width + 'px')
+          .style('height', height + 'px')
+          .append('svg')
+          .attr('width', width)
+          .attr('height', height)
+          .attr('class', 'map')
+          .selectAll('path')
+          .data(mapData.features)
+          .enter()
+          .append('path')
+          .attr('d', myPath)
+
+        // identify Calvin University.  note use of projection! it takes
+        // two coordinates in and returns x and y values in SVG coordinates
+        d3.select('div.map svg')
+          .selectAll('circle')
+          .data([{ lat: 42.9295124, lon: -85.5911216 }])
+          .enter()
+          .append('circle')
+          .attr('cx', d => myProjection([d.lon, d.lat])[0])
+          .attr('cy', d => myProjection([d.lon, d.lat])[1])
+          .attr('r', 3)
+          .style('fill', 'red')
+      }
+
+      function updateMap() {
+        // get the value from the drop down
+        let fact = d3.select('div.map select').property('value')
+
+        // use it to create a color scale
+        colorScale = d3
+          .scaleSequential()
+          .domain(d3.extent(Object.values(facts[fact])).map(Math.log)) // .map(d => Math.log(d))))
+          .interpolator(d3.interpolateViridis)
+
+        // apply the color scale to the paths (ie regions) in our map
+        d3.selectAll('div.map svg path')
+          .transition()
+          .duration(transitionTime)
+          .style('fill', d =>
+            colorScale(Math.log(facts[fact][d.properties.name]))
+          )
+      }
+    </script>
+  </body>
+</html>
